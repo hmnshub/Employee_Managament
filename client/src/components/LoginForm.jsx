@@ -169,11 +169,12 @@ export function LoginForm({ inHero = false, showDemoAccounts = true }) {
         </div>
       </form>
 
-      {/* Demo seed accounts only displayed in development mode */}
-      {showDemoAccounts && import.meta.env.DEV && (
+      {/* Demo accounts quick-fill buttons (available for testing & deployment preview) */}
+      {showDemoAccounts && (
         <div className="demo-accounts-section">
           <div className="demo-accounts-header">
-            <span>Quick fill demo credentials (development seed):</span>
+            <span>Quick-fill demo credentials:</span>
+            <span className="demo-tag">One Click</span>
           </div>
           <div className="demo-accounts-grid">
             {DEMO_ACCOUNTS.map((acc) => (
