@@ -1,0 +1,177 @@
+{
+  "info": {
+    "_postman_id": "9f88e7c2-4321-4a89-b123-0123456789ab",
+    "name": "Mini Project 01 – Employee Self-Service Portal API",
+    "description": "Complete API test collection for the Employee Self-Service Portal (Authentication, Profile, Address Update, Leave Management, Manager Approvals, Payslip PDF Download, HR Directory, and System Administration).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "csrfToken", "value": "" },
+    { "key": "leaveId", "value": "55555555-5555-4555-8555-555555555502" },
+    { "key": "payslipId", "value": "66666666-6666-4666-8666-666610000005" }
+  ],
+  "item": [
+    {
+      "name": "01 Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/health", "host": ["{{baseUrl}}"], "path": ["api", "health"] }
+      }
+    },
+    {
+      "name": "02 Login (Employee - Aayush Shrestha)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.data && json.data.csrfToken) {",
+              "  pm.collectionVariables.set('csrfToken', json.data.csrfToken);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"aayush.shrestha@portal.demo\",\n  \"password\": \"EmployeePass#2026!\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+      }
+    },
+    {
+      "name": "03 Get Own Employee Profile & Address",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/api/employees/me", "host": ["{{baseUrl}}"], "path": ["api", "employees", "me"] }
+      }
+    },
+    {
+      "name": "04 Update Own Address (with X-CSRF-Token & Optimistic Lock Version)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"version\": 1,\n  \"residential_line1\": \"House 205, Pulchowk Road\",\n  \"residential_line2\": \"Ward 3\",\n  \"residential_city\": \"Lalitpur\",\n  \"residential_state\": \"Bagmati\",\n  \"residential_postal_code\": \"44700\",\n  \"residential_country\": \"NP\",\n  \"mailing_same_as_residential\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/employees/me/address",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "employees", "me", "address"]
+        }
+      }
+    },
+    {
+      "name": "05 Get Leave Balance",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/leaves/balance",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "leaves", "balance"]
+        }
+      }
+    },
+    {
+      "name": "06 Apply for Leave",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"leave_type_id\": \"44444444-4444-4444-8444-444444444401\",\n  \"start_date\": \"2026-12-14\",\n  \"end_date\": \"2026-12-16\",\n  \"reason\": \"Family trip to Bandipur\",\n  \"idempotency_key\": \"postman-req-001\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/leaves", "host": ["{{baseUrl}}"], "path": ["api", "leaves"] }
+      }
+    },
+    {
+      "name": "07 Get My Leave Requests (Paginated)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/leaves/my?page=1&pageSize=10&sortBy=created_at&sortOrder=desc",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "leaves", "my"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "pageSize", "value": "10" },
+            { "key": "sortBy", "value": "created_at" },
+            { "key": "sortOrder", "value": "desc" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "08 Manager Approve/Reject Leave Decision",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"decision\": \"APPROVED\",\n  \"comment\": \"Approved. Handover verified.\",\n  \"version\": 1\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/leaves/{{leaveId}}/decision",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "leaves", "{{leaveId}}", "decision"]
+        }
+      }
+    },
+    {
+      "name": "09 List Own Payslips",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/payslips?page=1&pageSize=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payslips"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "pageSize", "value": "10" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "10 Download Payslip PDF",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/payslips/{{payslipId}}/download",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "payslips", "{{payslipId}}", "download"]
+        }
+      }
+    },
+    {
+      "name": "11 Logout",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }],
+        "url": { "raw": "{{baseUrl}}/api/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "auth", "logout"] }
+      }
+    }
+  ]
+}
