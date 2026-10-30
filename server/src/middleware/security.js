@@ -26,7 +26,7 @@ export function securityHeadersMiddleware(config) {
     res.removeHeader('X-Powered-By');
     res.setHeader(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
     );
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
@@ -50,14 +50,20 @@ export function securityHeadersMiddleware(config) {
 }
 
 /**
- * Enforces strict single-origin CORS with credentials support.
+ * Enforces strict single-origin CORS with credentials support,
+ * allowing configured clientOrigin, same-origin host, or Vercel preview/production domains.
  */
 export function corsMiddleware(config) {
   return (req, res, next) => {
     const origin = req.headers.origin;
     if (origin) {
-      if (origin === config.clientOrigin) {
-        res.setHeader('Access-Control-Allow-Origin', config.clientOrigin);
+      const host = req.headers.host;
+      const isSameHost = host && (origin === `https://${host}` || origin === `http://${host}`);
+      const isVercel = origin.endsWith('.vercel.app');
+      const isAllowed = origin === config.clientOrigin || isSameHost || isVercel;
+
+      if (isAllowed) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.setHeader('Vary', 'Origin');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
