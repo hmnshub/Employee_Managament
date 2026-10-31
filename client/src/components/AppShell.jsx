@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -13,7 +13,9 @@ import {
   ChevronRight,
   AlertCircle,
   CheckCircle2,
-  RefreshCw
+  RefreshCw,
+  Menu,
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
@@ -172,6 +174,24 @@ export function AppShell({ children }) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Auto-close mobile sidebar drawer when navigating to a new route
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  // Lock background scroll on mobile when drawer is open
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [sidebarOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -181,33 +201,72 @@ export function AppShell({ children }) {
   const role = user?.role || 'EMPLOYEE';
   const currentBreadcrumb = ROUTE_LABELS[location.pathname] || 'Portal';
 
+  const closeSidebar = () => setSidebarOpen(false);
+
   return (
     <div className="app-shell">
-      <aside className="app-sidebar" aria-label="Primary Navigation">
+      {/* Mobile Drawer Backdrop */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`} aria-label="Primary Navigation">
         <div className="sidebar-brand">
-          <h1 className="sidebar-brand-title">Employee Self-Service</h1>
-          <p className="sidebar-brand-subtitle">People & Payroll Portal</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h1 className="sidebar-brand-title">Employee Self-Service</h1>
+              <p className="sidebar-brand-subtitle">People & Payroll Portal</p>
+            </div>
+            <button
+              type="button"
+              className="sidebar-close-btn"
+              onClick={closeSidebar}
+              aria-label="Close navigation menu"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
           <div className="sidebar-section-label">Self-Service</div>
           {role !== 'SYSTEM_ADMIN' && (
-            <NavLink to="/dashboard" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+            <NavLink
+              to="/dashboard"
+              onClick={closeSidebar}
+              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            >
               <LayoutDashboard size={16} />
               <span>Overview</span>
             </NavLink>
           )}
-          <NavLink to="/profile" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+          <NavLink
+            to="/profile"
+            onClick={closeSidebar}
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          >
             <UserCheck size={16} />
             <span>My profile & address</span>
           </NavLink>
           {role !== 'SYSTEM_ADMIN' && (
             <>
-              <NavLink to="/leaves" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/leaves"
+                onClick={closeSidebar}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
                 <CalendarDays size={16} />
                 <span>Leave balance & requests</span>
               </NavLink>
-              <NavLink to="/payslips" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/payslips"
+                onClick={closeSidebar}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
                 <FileText size={16} />
                 <span>Payslips</span>
               </NavLink>
@@ -219,6 +278,7 @@ export function AppShell({ children }) {
               <div className="sidebar-section-label">Manager Workflows</div>
               <NavLink
                 to="/manager/approvals"
+                onClick={closeSidebar}
                 className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
               >
                 <CheckSquare size={16} />
@@ -230,11 +290,19 @@ export function AppShell({ children }) {
           {role === 'HR_ADMIN' && (
             <>
               <div className="sidebar-section-label">HR Administration</div>
-              <NavLink to="/hr/employees" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/hr/employees"
+                onClick={closeSidebar}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
                 <Users size={16} />
                 <span>Employee directory</span>
               </NavLink>
-              <NavLink to="/hr/leaves" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/hr/leaves"
+                onClick={closeSidebar}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
                 <CalendarDays size={16} />
                 <span>Leave overview (read-only)</span>
               </NavLink>
@@ -244,15 +312,27 @@ export function AppShell({ children }) {
           {role === 'SYSTEM_ADMIN' && (
             <>
               <div className="sidebar-section-label">System Administration</div>
-              <NavLink to="/admin/users" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/admin/users"
+                onClick={closeSidebar}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
                 <Users size={16} />
                 <span>Users & roles</span>
               </NavLink>
-              <NavLink to="/admin/reference" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/admin/reference"
+                onClick={closeSidebar}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
                 <Settings size={16} />
                 <span>Leave types reference</span>
               </NavLink>
-              <NavLink to="/admin/audit" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+              <NavLink
+                to="/admin/audit"
+                onClick={closeSidebar}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              >
                 <ShieldAlert size={16} />
                 <span>Security audit events</span>
               </NavLink>
@@ -263,10 +343,22 @@ export function AppShell({ children }) {
 
       <div className="app-main-wrapper">
         <header className="app-topbar">
-          <div className="breadcrumbs" aria-label="Breadcrumb">
-            <span>Portal</span>
-            <ChevronRight size={14} />
-            <span className="breadcrumb-current">{currentBreadcrumb}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+            <button
+              type="button"
+              className="mobile-nav-toggle"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              aria-label="Toggle navigation menu"
+              aria-expanded={sidebarOpen}
+            >
+              <Menu size={20} />
+            </button>
+
+            <div className="breadcrumbs" aria-label="Breadcrumb">
+              <span className="breadcrumb-root">Portal</span>
+              <ChevronRight size={14} className="breadcrumb-separator" />
+              <span className="breadcrumb-current">{currentBreadcrumb}</span>
+            </div>
           </div>
 
           <div className="topbar-user">
@@ -279,9 +371,14 @@ export function AppShell({ children }) {
                 {role.replace('_', ' ')}
               </div>
             </div>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={handleLogout}>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm btn-logout"
+              onClick={handleLogout}
+              title="Sign out from portal"
+            >
               <LogOut size={14} />
-              <span>Sign out</span>
+              <span className="logout-text">Sign out</span>
             </button>
           </div>
         </header>

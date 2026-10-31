@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
@@ -21,7 +21,9 @@ import {
   Clock,
   ShieldAlert,
   Calendar,
-  Sparkles
+  Sparkles,
+  Menu,
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { LoginForm } from '../components/LoginForm.jsx';
@@ -30,6 +32,7 @@ import '../styles/landing.css';
 export function LandingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (e, sectionId) => {
     e.preventDefault();
@@ -102,8 +105,115 @@ export function LandingPage() {
                 <span>Portal Sign In</span>
               </button>
             )}
+
+            <button
+              type="button"
+              className="landing-mobile-menu-btn"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="mobile-nav-drawer" role="dialog" aria-modal="true">
+            <div className="mobile-nav-links">
+              <a
+                href="#showcase"
+                onClick={(e) => {
+                  scrollToSection(e, 'showcase');
+                  setMobileMenuOpen(false);
+                }}
+                className="mobile-nav-link"
+              >
+                Platform Preview
+              </a>
+              <a
+                href="#introduction"
+                onClick={(e) => {
+                  scrollToSection(e, 'introduction');
+                  setMobileMenuOpen(false);
+                }}
+                className="mobile-nav-link"
+              >
+                Overview
+              </a>
+              <a
+                href="#how-it-works"
+                onClick={(e) => {
+                  scrollToSection(e, 'how-it-works');
+                  setMobileMenuOpen(false);
+                }}
+                className="mobile-nav-link"
+              >
+                How It Works
+              </a>
+              <a
+                href="#features"
+                onClick={(e) => {
+                  scrollToSection(e, 'features');
+                  setMobileMenuOpen(false);
+                }}
+                className="mobile-nav-link"
+              >
+                Features
+              </a>
+              <a
+                href="#roles"
+                onClick={(e) => {
+                  scrollToSection(e, 'roles');
+                  setMobileMenuOpen(false);
+                }}
+                className="mobile-nav-link"
+              >
+                Roles
+              </a>
+              <a
+                href="#security"
+                onClick={(e) => {
+                  scrollToSection(e, 'security');
+                  setMobileMenuOpen(false);
+                }}
+                className="mobile-nav-link"
+              >
+                Security
+              </a>
+            </div>
+            <div className="mobile-nav-actions">
+              {user ? (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate(user.landingRoute || '/dashboard');
+                  }}
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  <span>Dashboard ({user.role})</span>
+                  <ArrowRight size={14} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    focusLogin(e);
+                  }}
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  <Lock size={14} />
+                  <span>Sign In to Portal</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       <main id="main-content">
